@@ -23,6 +23,7 @@ class CanConfig:
 @dataclass
 class J2534Config:
     dll_path: str = ""  # selecionada pelo usuário; nunca presumida
+    simulador: bool = False  # True = ponte SIMULADA, sem hardware
 
 
 @dataclass

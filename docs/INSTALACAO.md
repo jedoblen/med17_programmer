@@ -35,3 +35,10 @@ Para usar outra pasta: variável de ambiente `MED17_HOME`.
 ## Problemas comuns
 - `No module named med17`: faltou `set PYTHONPATH=src`.
 - `No matching distribution for PySide6`: você está usando Python 32 bits; use o de 64 bits.
+
+## Fase 2: interface J2534
+1. Instale o driver da sua interface J2534 (ele registra a DLL em `HKLM\SOFTWARE\PassThruSupport.04.04`).
+2. Se a DLL for de 32 bits, o Python 32 bits deve responder a `py -3-32 --version` (usado só pela ponte, sem instalar pacotes).
+3. Na aba **Conexão**: "Detectar interfaces" → escolha a DLL → **Conectar**.
+4. Sem hardware, marque "Usar simulador J2534 (SIMULADO)". Resultados do simulador não comprovam funcionamento em hardware real.
+5. Códigos de erro J2534 aparecem no log com o nome (ex.: `ERR_DEVICE_NOT_CONNECTED` = interface não detectada pela DLL: confira cabo USB, driver e alimentação).
