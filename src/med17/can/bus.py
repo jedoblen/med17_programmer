@@ -19,8 +19,8 @@ class CanBus(Protocol):
 class BridgeCanBus:
     """CanBus usando um BridgeClient já conectado (canal CAN aberto, filtro configurado)."""
 
-    def __init__(self, client, extended: bool = False, poll_ms: int = 50) -> None:
-        self.client, self.extended, self.poll_ms = client, extended, poll_ms
+    def __init__(self, client, extended: bool = False, poll_ms: int = 50, batch: int = 16) -> None:
+        self.client, self.extended, self.poll_ms, self.batch = client, extended, poll_ms, batch
         self._buf: deque[CanFrame] = deque()
 
     def send(self, can_id: int, data: bytes, extended: bool = False) -> None:
@@ -36,7 +36,7 @@ class BridgeCanBus:
                 return self._buf.popleft()
             restante = fim - time.monotonic()
             espera = int(min(max(restante, 0.0) * 1000, self.poll_ms))
-            r = self.client.call("read", timeout=espera / 1000 + 3, wait_ms=espera, max=16)
+            r = self.client.call("read", timeout=espera / 1000 + 3, wait_ms=espera, max=self.batch)
             for f in r["frames"]:
                 if not f["tx_echo"]:
                     self._buf.append(CanFrame(f["id"], bytes.fromhex(f["data"]), f["ext"], False, f["ts"]))

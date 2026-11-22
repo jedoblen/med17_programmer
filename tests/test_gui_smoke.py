@@ -11,11 +11,15 @@ from med17.core.config import AppConfig  # noqa: E402
 from med17.gui.main_window import MainWindow  # noqa: E402
 
 
-def test_janela_abre_e_abas_futuras_desabilitadas():
+def test_janela_abre_e_abas_futuras_desabilitadas(monkeypatch, tmp_path):
+    monkeypatch.setenv("MED17_HOME", str(tmp_path))
     app = QApplication.instance() or QApplication([])
     w = MainWindow(AppConfig())
-    assert w.tabs.isTabEnabled(0)
-    assert not any(w.tabs.isTabEnabled(i) for i in range(1, w.tabs.count()))
+    assert w.tabs.isTabEnabled(0) and w.tabs.isTabEnabled(1)
+    assert w.tabs.tabText(1) == "Identificação ECU"
+    assert not any(w.tabs.isTabEnabled(i) for i in range(2, w.tabs.count()))
+    assert not w.ident.botao.isEnabled()  # desconectado
+    assert (tmp_path / "profiles" / "_modelo_med17.json").exists()
     w.close()
     app.processEvents()
 

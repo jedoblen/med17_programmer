@@ -34,3 +34,9 @@ def backups_dir() -> Path:
 
 def config_file() -> Path:
     return app_data_dir() / "config.json"
+
+
+def profiles_dir() -> Path:
+    p = app_data_dir() / "profiles"
+    p.mkdir(parents=True, exist_ok=True)
+    return p

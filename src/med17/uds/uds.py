@@ -167,6 +167,7 @@ class UdsClient:
 
 
 class TesterPresentKeeper:
+    __test__ = False  # evita coleta indevida pelo pytest
     """Envia Tester Present periodicamente em segundo plano (sessão não-padrão ativa)."""
 
     def __init__(self, client: UdsClient, interval: float = 2.0) -> None:

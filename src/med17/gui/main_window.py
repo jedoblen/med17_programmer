@@ -1,4 +1,4 @@
-"""Janela principal (Fase 2): estrutura de abas e painel de logs.
+"""Janela principal (Fase 4): estrutura de abas e painel de logs.
 
 As abas de operação ficam desabilitadas até as fases correspondentes serem
 implementadas e validadas. Nenhuma operação com ECU existe nesta fase.
@@ -19,8 +19,11 @@ from PySide6.QtWidgets import (
 from .. import __version__
 from ..core.config import BITRATES_VALIDOS, NIVEIS_LOG, AppConfig, save_config
 from ..core.logging_setup import attach_callback
+from ..core.paths import profiles_dir
 from ..j2534.client import BridgeClient, BridgeError, bridge_command
 from ..j2534.registry import discover_dlls, pe_bitness
+from ..profiles.manager import ProfileManager
+from .identificacao_tab import IdentificacaoTab
 
 log = logging.getLogger("med17.gui")
 
@@ -55,13 +58,14 @@ class LogPanel(QPlainTextEdit):
 
 
 class ConexaoTab(QWidget):
-    """Seleção de DLL J2534, configuração CAN e conexão via ponte (Fase 2).
+    """Seleção de DLL J2534, configuração CAN e conexão via ponte (Fase 4).
 
     Nesta fase não se transmite nada à ECU: a conexão apenas abre o dispositivo,
     lê versões/tensão e permite escutar o barramento passivamente.
     """
 
     _fim = Signal(object, object)  # resultado, exceção (da thread de trabalho)
+    conexao_alterada = Signal(bool)  # True = conectado e livre para operações
 
     def __init__(self, cfg: AppConfig) -> None:
         super().__init__()
@@ -136,6 +140,7 @@ class ConexaoTab(QWidget):
         self.b_escutar.setEnabled(conectado and not ocupado)
         self.b_desconectar.setEnabled(conectado and not ocupado)
         self._conectado = conectado
+        self.conexao_alterada.emit(conectado and not ocupado)
 
     def _executar(self, fn, depois) -> None:
         self._estado(self._conectado, ocupado=True)
@@ -286,7 +291,7 @@ def _aba_futura(titulo: str, fase: int) -> QWidget:
 
 class MainWindow(QMainWindow):
     ABAS_FUTURAS = (
-        ("Identificação ECU", 4), ("FLASH", 5), ("EEPROM", 5),
+        ("FLASH", 5), ("EEPROM", 5),
         ("Gravação", 6), ("DUMPs / Editor HEX", 7),
     )
 
@@ -298,6 +303,9 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget()
         self.conexao = ConexaoTab(cfg)
         self.tabs.addTab(self.conexao, "Conexão")
+        self.perfis = ProfileManager(profiles_dir())
+        self.ident = IdentificacaoTab(self.conexao, self.perfis)
+        self.tabs.addTab(self.ident, "Identificação ECU")
         for titulo, fase in self.ABAS_FUTURAS:
             i = self.tabs.addTab(_aba_futura(titulo, fase), titulo)
             self.tabs.setTabEnabled(i, False)
@@ -309,8 +317,8 @@ class MainWindow(QMainWindow):
         split.setStretchFactor(0, 3)
         split.setStretchFactor(1, 2)
         self.setCentralWidget(split)
-        self.statusBar().showMessage("Desconectado — nenhuma operação com ECU disponível (Fase 2)")
-        log.info("Interface iniciada (Fase 2).")
+        self.statusBar().showMessage("Desconectado — nenhuma operação com ECU disponível (Fase 4)")
+        log.info("Interface iniciada (Fase 4).")
 
     def closeEvent(self, event) -> None:
         self.conexao.encerrar()
