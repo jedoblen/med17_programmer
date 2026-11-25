@@ -22,3 +22,12 @@ O programa não traz nenhum perfil com dados de ECU real. A ECU pode não suport
 | Heurísticas de detecção | indícios, não prova | confirmar com a documentação |
 
 ECU alvo informada pelo usuário: ME17.5.24 (Gol G6, peça 0261S10455) — protocolo ainda desconhecido.
+
+## Fase 5, parte B — decodificação offline de UDS (novo)
+| Item | Estado | Verificação |
+|---|---|---|
+| `can/decode_uds.py` (remontagem ISO-TP offline + decodificação de serviços) | escrito | testado com tráfego **sintético** |
+| `tools/uds_decode.py` | escrito | só testável depois de uma captura real |
+
+Decodifica request/response de 0x10, 0x22, 0x23, 0x27 (sem analisar semente/chave), 0x31, 0x34, 0x35, 0x36, 0x37, 0x3E.
+Serve para extrair, de uma leitura feita pela Prog3, os endereços e tamanhos reais de FLASH/EEPROM da ME17.5.24.
