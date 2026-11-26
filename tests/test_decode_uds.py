@@ -73,3 +73,12 @@ def test_sessao_completa_com_leitura_de_memoria():
 def test_ids_trocados_nao_misturam_payloads():
     ev = decodificar_sessao([R(0, TX, [2, 0x3E, 0]), R(0.01, RX, [2, 0x7E, 0])], TX, RX)
     assert [e["papel"] for e in ev] == ["tester", "ECU"]
+
+
+def test_decodificar_ecu_reset_e_communication_control():
+    r = decodificar_mensagem(bytes([0x11, 0x01]))
+    assert r["nome"] == "ECUReset" and r["tipo"] == "hardReset"
+    cc = decodificar_mensagem(bytes([0x28, 0x03, 0x01]))
+    assert cc["nome"] == "CommunicationControl" and cc["subfuncao"] == 3 and cc["tipo_comunicacao"] == 1
+    resp = decodificar_mensagem(bytes([0x51, 0x01]))
+    assert resp["nome"] == "ECUReset" and resp["resposta"] is True

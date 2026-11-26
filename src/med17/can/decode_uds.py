@@ -12,12 +12,15 @@ from dataclasses import dataclass
 from .capture import Registro
 
 NOMES_SID = {
-    0x10: "DiagnosticSessionControl", 0x22: "ReadDataByIdentifier", 0x23: "ReadMemoryByAddress",
-    0x27: "SecurityAccess", 0x28: "CommunicationControl", 0x2E: "WriteDataByIdentifier",
-    0x31: "RoutineControl", 0x34: "RequestDownload", 0x35: "RequestUpload",
-    0x36: "TransferData", 0x37: "RequestTransferExit", 0x3E: "TesterPresent",
-    0x19: "ReadDTCInformation", 0x14: "ClearDiagnosticInformation",
+    0x10: "DiagnosticSessionControl", 0x11: "ECUReset", 0x22: "ReadDataByIdentifier",
+    0x23: "ReadMemoryByAddress", 0x27: "SecurityAccess", 0x28: "CommunicationControl",
+    0x2E: "WriteDataByIdentifier", 0x31: "RoutineControl", 0x34: "RequestDownload",
+    0x35: "RequestUpload", 0x36: "TransferData", 0x37: "RequestTransferExit",
+    0x3E: "TesterPresent", 0x19: "ReadDTCInformation", 0x14: "ClearDiagnosticInformation",
 }
+
+TIPOS_RESET = {0x01: "hardReset", 0x02: "keyOffOnReset", 0x03: "softReset",
+              0x04: "enableRapidPowerShutDown", 0x05: "disableRapidPowerShutDown"}
 
 
 @dataclass
@@ -127,6 +130,11 @@ def decodificar_mensagem(payload: bytes) -> dict:
         elif base == 0x31:
             info["subfuncao"] = payload[1] if len(payload) > 1 else None
             info["rotina_id"] = int.from_bytes(payload[2:4], "big") if len(payload) >= 4 else None
+        elif base == 0x11:
+            info["tipo"] = TIPOS_RESET.get(payload[1] & 0x7F, f"0x{payload[1] & 0x7F:02X}") if len(payload) > 1 else None
+        elif base == 0x28:
+            info["subfuncao"] = payload[1] if len(payload) > 1 else None
+            info["tipo_comunicacao"] = payload[2] if len(payload) > 2 else None
     except (IndexError, ValueError):
         info["aviso"] = "payload curto/ inesperado para este serviço"
     return info
